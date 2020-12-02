@@ -57,7 +57,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void user_not_present_in_db() {
+    public void find_by_username_happy_path() {
 //        ResponseEntity<User> userResponseEntity = userController.findByUserName("test");
 //        assertEquals(404, userResponseEntity.getStatusCode().value());
         User user = new User();
@@ -72,7 +72,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void user_find_by_id_happy_path(){
+    public void find_by_id_happy_path(){
         User user = new User();
         user.setId(1L);
         user.setUsername("test");
