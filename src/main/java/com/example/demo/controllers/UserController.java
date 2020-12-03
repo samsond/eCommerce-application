@@ -2,6 +2,11 @@ package com.example.demo.controllers;
 
 import java.util.Optional;
 
+import com.example.demo.model.persistence.Item;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
+import org.slf4j.profiler.TimeInstrument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +37,9 @@ public class UserController {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	private static Logger logger = LoggerFactory.getLogger(UserController.class);
+	private static Profiler profiler = new Profiler("UserController");
+
 	@GetMapping("/id/{id}")
 	public ResponseEntity<User> findById(@PathVariable Long id) {
 		return ResponseEntity.of(userRepository.findById(id));
@@ -39,15 +47,21 @@ public class UserController {
 	
 	@GetMapping("/{username}")
 	public ResponseEntity<User> findByUserName(@PathVariable String username) {
+		profiler.start("find by user name");
 		User user = userRepository.findByUsername(username);
+		TimeInstrument timeElapsed = profiler.stop();
+		timeElapsed.print();
 		return user == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(user);
 	}
 	
 	@PostMapping("/create")
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
+		profiler.start("create user");
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
 		Cart cart = new Cart();
+//		logger.info("username is set with ", createUserRequest.getUsername());
+		logger.info("username is set with {}", createUserRequest.getUsername());
 		cartRepository.save(cart);
 		user.setCart(cart);
 		if (createUserRequest.getPassword().length() < 7 ||
@@ -56,6 +70,8 @@ public class UserController {
 		}
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		userRepository.save(user);
+		TimeInstrument timeElapsed = profiler.stop();
+		timeElapsed.print();
 		return ResponseEntity.ok(user);
 	}
 	

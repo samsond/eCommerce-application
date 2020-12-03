@@ -3,6 +3,10 @@ package com.example.demo.controllers;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.profiler.Profiler;
+import org.slf4j.profiler.TimeInstrument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +35,13 @@ public class CartController {
 	
 	@Autowired
 	private ItemRepository itemRepository;
+
+	private static Logger logger = LoggerFactory.getLogger(CartController.class);
+	private static Profiler profiler = new Profiler("CartController");
 	
 	@PostMapping("/addToCart")
 	public ResponseEntity<Cart> addTocart(@RequestBody ModifyCartRequest request) {
+		profiler.start("add to cart");
 		User user = userRepository.findByUsername(request.getUsername());
 		if(user == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -45,7 +53,12 @@ public class CartController {
 		Cart cart = user.getCart();
 		IntStream.range(0, request.getQuantity())
 			.forEach(i -> cart.addItem(item.get()));
+		if (cart.getItems().size() != 0) {
+			logger.info("cart item name {}", cart.getItems().get(0).getName());
+		}
 		cartRepository.save(cart);
+		TimeInstrument timeElapsed = profiler.stop();
+		timeElapsed.print();
 		return ResponseEntity.ok(cart);
 	}
 	
