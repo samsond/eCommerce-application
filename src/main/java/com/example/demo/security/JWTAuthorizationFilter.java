@@ -69,6 +69,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
             ipAddress = request.getRemoteAddr();
         }
 
-        logger.warn("Forbidden access with client ip address {}", ipAddress);
+        logger.warn("Unauthorized access with client ip address {}", ipAddress);
     }
 }
